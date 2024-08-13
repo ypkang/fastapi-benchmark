@@ -1,0 +1,6 @@
+fastapi
+pymongo
+motor
+uvicorn
+gunicorn
+uvicorn-worker
