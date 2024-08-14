@@ -1,0 +1,5 @@
+{
+    "mode": "threaded",
+    "nthreads": 1,
+    "nworkers": 2
+}

@@ -11,7 +11,7 @@ client = MongoClient(os.getenv("DATABASE_HOST"))
 db = client.test_database
 
 
-@app.get("/sync")
+@app.get("/read_and_write_item")
 def read_and_write_item(item_id: str):
     item = db.items.find_one({"_id": item_id})
     if item is None:

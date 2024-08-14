@@ -5,7 +5,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install system dependencies (if any)
-# RUN apt-get update && apt-get install -y git vim procps wget
+RUN apt-get update && apt-get install -y jq
 
 # Install dependencies specified in requirements.txt (if any)
 ADD src/requirements.txt .
@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir --ignore-installed -r requirements.txt
 ADD start.sh /app
 ADD restart.sh /app
 ADD src/ /app
+ADD config.json /app
 
 # Make port 5000 available to the world outside this container
 EXPOSE 8000

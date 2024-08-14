@@ -25,13 +25,22 @@ quit() {
   fi
 }
 
+MODE=$(jq -r ".mode" config.json)
+NTHREADS=$(jq -r ".nthreads" config.json)
+NWORKERS=$(jq -r ".nworkers" config.json)
+
 while true; do
     rm -f restart.txt
-    # sync threaded server
-    gunicorn -w 1 -k uvicorn_worker.UvicornWorker --threads 4 sync_server:app &
-
-    # async server
-    # uvicorn async_server:app --workers 1 &
+    if [ $MODE = "threaded" ]; then
+      echo "start sync threaded server"
+      gunicorn -w $NWORKERS -k uvicorn_worker.UvicornWorker --threads $NTHREADS sync_server:app &
+    elif [ $MODE = "async" ]; then
+      echo "start async server"
+      uvicorn async_server:app --workers $NWORKERS &
+    else
+      echo "Invalid mode"
+      exit 1
+    fi  
 
     process_id=$!
     echo "$process_id" > process.txt

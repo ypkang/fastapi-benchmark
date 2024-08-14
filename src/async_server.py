@@ -12,7 +12,7 @@ client = AsyncIOMotorClient(os.getenv("DATABASE_HOST"))
 db = client.test_database
 
 
-@app.get("/async")
+@app.get("/read_and_write_item")
 async def read_and_write_item(item_id: str):
     item = await db.items.find_one({"_id": item_id})
     if item is None:
