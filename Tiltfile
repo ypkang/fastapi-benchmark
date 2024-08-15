@@ -10,7 +10,7 @@ docker_build(
     "server", 
     context=".", 
     dockerfile="configs/server.Dockerfile",
-    ignore=[],
+    ignore=["**results/", "sweep.py"],
     entrypoint=["sh", "-c", "./start.sh"],
     live_update=[
         sync("src/", "/app/"),

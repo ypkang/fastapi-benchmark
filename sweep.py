@@ -37,7 +37,7 @@ def parse_ab_output(output):
         elif (
             line.startswith("Time per request:") and "across all concurrent" not in line
         ):
-            result["time_per_request"] = line.split(":")[1].strip().split()[0]
+            result["time_per_request_ms"] = line.split(":")[1].strip().split()[0]
         elif line.startswith("Transfer rate:"):
             result["transfer_rate"] = line.split(":")[1].strip().split()[0]
 
@@ -45,13 +45,16 @@ def parse_ab_output(output):
 
 
 def run_ab_test(concurrency, url, requests=1000):
+    print(f"Running ab test with concurrency {concurrency} and {requests} requests")
     # Run the ab command with the specified concurrency level
     command = f"ab -n {requests} -c {concurrency} {url}"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    return parse_ab_output(result.stdout)
+    print(f"Completed ab test with concurrency {concurrency} and {requests} requests")
+    return result.stdout, parse_ab_output(result.stdout)
 
 
 def start_server(mode, nworkers, nthreads=0):
+    print("Starting server with", mode, nworkers, nthreads)
     # update json file and wait for 10 seconds for server to start
     with open("config.json", "wb") as f:
         f.write(
@@ -63,33 +66,43 @@ def start_server(mode, nworkers, nthreads=0):
                 }
             ).encode()
         )
-    time.sleep(10)
+    time.sleep(20)
 
 
 RESULTS_DIR = "results"
+RAW_RESULTS_DIR = "raw_results"
 SERVER_URL = "http://127.0.0.1:8000/read_and_write_item?item_id=1"
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
+os.makedirs(RAW_RESULTS_DIR, exist_ok=True)
 
 
 # Sweep sync threaded server
 for mode in ["threaded", "async"]:
-    for nthreads in range(0, 100, 5):
+    for nthreads in range(0, 10, 5):
         if nthreads == 0:
             nthreads = 1
-        for nworkers in range(1, 5, 1):
+        for nworkers in range(1, 3, 1):
             start_server(mode, nworkers, nthreads)
             results = {}
-            for concurrency in range(0, 55, 5):
+            raw_results = {}
+            for concurrency in range(0, 10, 5):
                 if concurrency == 0:
                     concurrency = 1
 
-                res = run_ab_test(concurrency, SERVER_URL, requests=1000)
+                raw_res, res = run_ab_test(concurrency, SERVER_URL, requests=10)
 
                 results[concurrency] = res
+                raw_results[concurrency] = raw_res
+
             results_file = os.path.join(
                 RESULTS_DIR, f"{mode}_workers_{nworkers}_threads_{nthreads}.json"
             )
+            with open(results_file, "w") as f:
+                json.dump(results, f, indent=2)
 
-    with open(os.path.join(RESULTS_DIR, "threaded_workers.json"), "w") as f:
-        json.dump(results, f, indent=2)
+            raw_results_file = os.path.join(
+                RAW_RESULTS_DIR, f"{mode}_workers_{nworkers}_threads_{nthreads}.json"
+            )
+            with open(raw_results_file, "w") as f:
+                json.dump(raw_results, f, indent=2)
