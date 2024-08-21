@@ -1,1 +1,1 @@
-{"mode": "async", "nworkers": 2, "nthreads": 5}
+{"mode": "async", "nworkers": 1, "nthreads": 1}

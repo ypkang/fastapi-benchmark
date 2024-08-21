@@ -31,11 +31,15 @@ NWORKERS=$(jq -r ".nworkers" config.json)
 
 while true; do
     rm -f restart.txt
-    if [ $MODE = "threaded" ]; then
-      echo "start sync threaded server"
+    if [ $MODE = "default" ]; then
+      echo "Start default server with uvicorn $NWORKERS"
+      uvicorn sync_server:app --workers $NWORKERS &
+    elif [ $MODE = "threaded" ]; then
+      echo "Start sync threaded server $NWORKERS $NTHREADS"
       gunicorn -w $NWORKERS -k uvicorn_worker.UvicornWorker --threads $NTHREADS sync_server:app &
+      # uvicorn sync_server:app &
     elif [ $MODE = "async" ]; then
-      echo "start async server"
+      echo "Start async server $NWORKERS"
       uvicorn async_server:app --workers $NWORKERS &
     else
       echo "Invalid mode"
