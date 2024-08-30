@@ -16,7 +16,7 @@ db = client.test_database
 def cpu_bound_task():
     # Simulate a CPU-bound task
     result = 0
-    for i in range(10**7):
+    for i in range(10**6):
         result += i * i
     return result
 
