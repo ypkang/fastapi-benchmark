@@ -71,7 +71,7 @@ def start_server(mode, nworkers, nthreads=0):
 
 RESULTS_DIR = "results"
 RAW_RESULTS_DIR = "raw_results"
-SERVER_URL = "http://127.0.0.1:8000/read_and_write_item"
+SERVER_URL = "http://localhost:8000/read_and_write_item"
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(RAW_RESULTS_DIR, exist_ok=True)
@@ -79,20 +79,20 @@ os.makedirs(RAW_RESULTS_DIR, exist_ok=True)
 
 # Sweep sync threaded server
 # for mode in ["threaded", "async"]:
-for mode in ["default", "async"]:
+for mode in ["async", "threaded"]:
     for nthreads in [0]:
         if nthreads == 0:
             nthreads = 1
-        for nworkers in [1]:
+        for nworkers in [1, 4, 8]:
             start_server(mode, nworkers, nthreads)
             results = {}
             raw_results = {}
-            for concurrency in range(0, 1100, 100):
+            for concurrency in range(0, 200, 50):
                 if concurrency == 0:
                     concurrency = 1
 
                 raw_res, res = run_ab_test(
-                    concurrency, SERVER_URL, requests=1 * concurrency
+                    concurrency, SERVER_URL, requests=100 * concurrency
                 )
 
                 results[concurrency] = res
